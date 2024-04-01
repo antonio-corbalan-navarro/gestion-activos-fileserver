@@ -1,6 +1,10 @@
 FROM node:20.11
 
-WORKDIR /app
+VOLUME /src
+
+WORKDIR /src
+
+
 
 COPY . .
 

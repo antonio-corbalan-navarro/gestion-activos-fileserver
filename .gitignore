@@ -8,3 +8,4 @@ src/uploads/images/**
 connectDB.txt
 sendEmai.sh
 endpoint.txt
+fileserver.tar

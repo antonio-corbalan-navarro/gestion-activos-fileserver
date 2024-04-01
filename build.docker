@@ -1,0 +1,5 @@
+BUILD IMAGE:
+docker build -t gestion-activos-file-server .
+
+RUN IMAGE:
+docker run --env-file=./.env -p 3002:3002 -i -t gestion-activos-file-server

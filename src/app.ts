@@ -26,7 +26,9 @@ app.use(cors(
       'http://82.223.152.155:3002',
       'http://dilustech.com:3002',
       'https://82.223.152.155:3002',
-      'https://dilustech.com:3002'
+      'https://dilustech.com:3002',
+      'https://diluswebappdev.vercel.app',
+      'https://app.dilustech.com',
     ],
     credentials: true
   }

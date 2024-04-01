@@ -1,10 +1,8 @@
 FROM node:20.11
 
-VOLUME /src
+WORKDIR /
 
-WORKDIR /src
-
-
+VOLUME /src/uploads
 
 COPY . .
 

@@ -23,6 +23,10 @@ app.use(cors(
       'http://localhost:3000/auth/loginadmin',
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://82.223.152.155:3002',
+      'http://dilustech.com:3002',
+      'https://82.223.152.155:3002',
+      'https://dilustech.com:3002'
     ],
     credentials: true
   }

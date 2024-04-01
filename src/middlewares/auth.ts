@@ -14,7 +14,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       }
     })
   } else {
-    res.status(404).json({ error: 'unauthorized user' })
+    res.status(404).json({ error: 'unauthorized user', ACCESS_TOKEN_SECRET, token, cookies : req.cookies  })
   }
 }
 

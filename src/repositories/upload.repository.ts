@@ -1,116 +1,172 @@
 import { NextFunction, Request, Response } from "express";
 import { Pool } from "pg";
 import pool from "../config/pool";
-import { dropDuplicates } from "../utils/functions";
 import sharp from "sharp";
 import path from "node:path"
 import crypto from 'crypto'
+
+type UploadFile = {
+    fieldname: String,
+    originalname: String,
+    encoding:  String,
+    mimetype:  String,
+    destination: String,
+    filename:  String,
+    path:  String,
+    size: Number,
+    buffer: Array<Number>
+}
 
 export class UploadRepository {
     private pool: Pool = pool
     private CURRENT_DIR = path.dirname(__filename)
 
-    public async uploadImage(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const imageId = crypto.randomUUID()
-            const folderDir = path.join(this.CURRENT_DIR, '..', 'uploads', 'images', `${imageId}.webp`)
+    public async uploadImage(req: any, res: Response, next: NextFunction): Promise<void> {
+        const images: any= req.files
+        const tableDirId = req.params.tableDirId
+        const tableDir = req.url.split('/')[2]
 
-            sharp(req.file?.buffer)
-                .resize(500)
-                .webp()
-                .toFile(folderDir)
-
-            const data: any = req.file
-            const result = await this.pool.query(
-                'SELECT * FROM uploadImage($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-                [
-                    imageId,
-                    data?.fieldname || null,
-                    data?.originalname || null,
-                    data?.encoding || null,
-                    data?.mimetype || null,
-                    imageId + '.webp',
-                    folderDir,
-                    data?.size || null,
-                    res.locals.user.rows[0].user_id
-                ]
-            )
-
-            res.status(200).json(result.rows[0])
-            res.end()
-        } catch (error) {
-            next(error)
+        if(images.length < 1) {
+            res.status(404).json({error: 'No images uploaded'})
+            return
         }
-    }
 
-    public async uploadPDF(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const data: any = req.file
-
-            const documentId = data.filename.split('.')[0]
-
-            const result = await this.pool.query(
-                'SELECT * FROM uploadDocument($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-                [
-                    documentId,
-                    data?.fieldname || null,
-                    data?.originalname || null,
-                    data?.encoding || null,
-                    data?.mimetype || null,
-                    data?.filename || null,
-                    data?.path || null,
-                    data?.size || null,
-                    res.locals.user.rows[0].user_id
-                ]
-            )
-            res.status(200).json(result.rows[0])
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    public async putAttachments(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const tableId = req.params.tableId
-            const { images = [], documents = [] } = req.body
-
-            const table = req.params.table
-            const tableIdParsed = table.substring(0, table.length - 1) + '_id';
-
-            const currentAttachments = await this.pool.query(
-                `SELECT images, documents 
-                FROM ${table} 
-                WHERE ${tableIdParsed} = $1`,
-                [tableId])
-
-            let imagesArray: Array<string> = []
-            let documentsArray: Array<string> = []
-
-            imagesArray.push(...currentAttachments.rows[0].images)
-            imagesArray.push(...images)
-            imagesArray = dropDuplicates(imagesArray)
-
-            documentsArray.push(...currentAttachments.rows[0].documents)
-            documentsArray.push(...documents)
-            documentsArray = dropDuplicates(documentsArray)
-
-            const result = await this.pool.query(
-                `UPDATE ${table} 
-                 SET images = $1, documents = $2
-                 WHERE ${tableIdParsed} = '${tableId}'::uuid
-                 RETURNING *`,
-                [imagesArray, documentsArray])
-
-            res.status(200).json({
-                success: {
-                    images: result.rows[0].images,
-                    documents: result.rows[0].documents
+        for await(const i of images) {
+            try {
+                console.log({trying: `Subiendo imagen: ${i.originalname}`})
+                const imageId = crypto.randomUUID()
+                const folderDir = path.join(this.CURRENT_DIR, '..', 'uploads', 'images', tableDir, `${i.originalname}-${imageId}.webp`)
+            
+                const resourceExists = await this.pool.query(`
+                    SELECT ${tableDir}_id FROM ${tableDir}s WHERE ${tableDir}_id = '${tableDirId}'::uuid;
+                `)
+    
+                if(resourceExists.rowCount === 0) {
+                    res.status(200).json({error: `${tableDir}_id ${tableDirId} not found`})
+                    return
                 }
-            })
-        } catch (error) {
-            next(error)
+                const result = await this.pool.query(`
+                    INSERT INTO 
+                        ${tableDir}_images(
+                            image_id,
+                            field_name, 
+                            original_name,
+                            encoding, 
+                            mimetype, 
+                            filename, 
+                            path,
+                            size,
+                            ${tableDir}_id,
+                            created_by,
+                            shareable
+                        )
+                    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                    RETURNING image_id, original_name, filename
+                `,
+                    [
+                        imageId,
+                        i.fieldname,
+                        i.originalname,
+                        i.encoding,
+                        i.mimetype,
+                        `${i.originalname}-${imageId}.webp`,
+                        folderDir,
+                        i.size,
+                        tableDirId,
+                        res.locals.user.rows[0].user_id,
+                        false
+                    ]
+                )
+    
+                if(result.rowCount === 0) {
+                    res.status(404).json({error: 'Something went wrong'})
+                    return
+                }
+    
+                sharp(i.buffer)
+                    .resize(500)
+                    .webp()
+                    .toFile(folderDir)
+
+                console.log({success: `Imagen su vida ${(i.originalname)}`})   
+            } catch (error) {
+                next(error)
+            }
         }
+        res.status(200).json({success: 'Su vida de imagenes terminada'})
+        return
     }
 
+    public async uploadDocument(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const documents: any= req.files
 
+        const tableDirId = req.params.tableDirId
+        const tableDir = req.url.split('/')[2]
+
+        if(documents.length < 1) {
+            res.status(404).json({error: 'No documents uploaded'})
+            return
+        }
+
+        for await(const i of documents) {
+            try {
+                console.log({trying: `Subiendo imagen: ${i.originalname}`})
+                const urlSplit = i.filename.split('-')
+                const documentId = `${urlSplit.at(-5)}-${urlSplit.at(-4)}-${urlSplit.at(-3)}-${urlSplit.at(-2)}-${urlSplit.at(-1)?.split('.')[0]}`
+            
+                const resourceExists = await this.pool.query(`
+                    SELECT ${tableDir}_id FROM ${tableDir}s WHERE ${tableDir}_id = '${tableDirId}'::uuid;
+                `)
+    
+                if(resourceExists.rowCount === 0) {
+                    res.status(200).json({error: `${tableDir}_id ${tableDirId} not found`})
+                    return
+                }
+
+                const result = await this.pool.query(`
+                    INSERT INTO 
+                        ${tableDir}_documents(
+                            document_id,
+                            field_name, 
+                            original_name,
+                            encoding, 
+                            mimetype, 
+                            filename, 
+                            path,
+                            size,
+                            ${tableDir}_id,
+                            created_by,
+                            shareable
+                        )
+                    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                    RETURNING document_id, original_name, filename
+                `,
+                    [
+                        documentId,
+                        i.fieldname,
+                        i.originalname,
+                        i.encoding,
+                        i.mimetype,
+                        i.filename,
+                        i.path,
+                        i.size,
+                        tableDirId,
+                        res.locals.user.rows[0].user_id,
+                        false
+                    ]
+                )
+                    
+                if(result.rowCount === 0) {
+                    res.status(404).json({error: 'Something went wrong'});
+                    return
+                }
+
+                console.log({success: `Documento su vido ${(i.originalname)}`})   
+            } catch (error) {
+                return next(error)
+            }
+        }
+        res.status(200).json({success: 'Su vida de documentos terminada'})
+        return
+    }
 }

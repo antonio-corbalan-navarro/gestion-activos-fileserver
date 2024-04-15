@@ -8,9 +8,8 @@ import createError from 'http-errors';
 import { join } from "node:path";
 import path from "node:path"
 import { API } from './config/server';
-import { routerV1 } from './routes/v1';
-import swaggerRouter from './routes/swagger';
-import { checkUser, requireAuth } from './middlewares/auth';
+import { routerV1 } from './routes';
+import { checkUser, requireAuth, isAllowedDocument, isAllowedImage } from './middlewares/auth';
 
 // Create server:
 const app = express();
@@ -19,14 +18,7 @@ const app = express();
 app.use(cors(
   {
     origin: [
-      'http://localhost:3000/auth/login',
-      'http://localhost:3000/auth/loginadmin',
       'http://localhost:3000',
-      'http://localhost:3001',
-      'http://82.223.152.155:3002',
-      'http://dilustech.com:3002',
-      'https://82.223.152.155:3002',
-      'https://dilustech.com:3002',
       'https://diluswebappdev.vercel.app',
       'https://app.dilustech.com',
     ],
@@ -40,32 +32,57 @@ app.use(compression());
 app.use(cookieParser());
 
 // Routes import:
-app.use('/v1/api', checkUser, requireAuth, routerV1);
-app.use(swaggerRouter)
+app.use('/', checkUser, requireAuth, routerV1);
 
 // TODO: Export storage router
 // Storage Routes:
 const CURRENT_DIR = path.dirname(__filename)
 
-app.use('/images', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/images')))
-app.use('/docs', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/documents')))
+app.use('/images', checkUser, requireAuth, isAllowedImage)
+app.use('/images/station', express.static(join(CURRENT_DIR, './uploads/images/station')))
+app.use('/images/instrument', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/images/instrument')))
+app.use('/images/calibration', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/images/calibration')))
+app.use('/images/report', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/images/report')))
+app.use('/images/ticket', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/images/ticket')))
+app.use('/images/response', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/images/response')))
+
+app.use('/documents', checkUser, requireAuth, isAllowedDocument)
+app.use('/documents/station', express.static(join(CURRENT_DIR, './uploads/documents/station')))
+app.use('/documents/instrument', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/documents/instrument')))
+app.use('/documents/calibration', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/documents/calibration')))
+app.use('/documents/report', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/documents/report')))
+app.use('/documents/ticket', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/documents/ticket')))
+app.use('/documents/response', checkUser, requireAuth, express.static(join(CURRENT_DIR, './uploads/documents/response')))
 
 // Default error handler:
 app.use((_req: Request, _res: Response, next: NextFunction) => {
+  console.log('Default error handler')
   next(createError(404));
+  return 
 });
 
 app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log('ERROR 500 TRY')
+    console.log('code', res.statusCode)
     res.status(err.status || 500).json({
       error: err.message,
     });
+    res.end()
+    return
   } catch (error) {
-    next(error)
+    console.log('ERROR 500 CATCH')
+    return
   }
 });
 
 // Run server:
 app.listen(API.port, () => {
   console.log(`API RUNNING AT [http://localhost:${API.port}]`);
+  console.log({ ESTO: API.deploy })
+  if (API.deploy === 'local') {
+    console.log(`MODE DESARROLLO`);
+  } else {
+    console.log(`MODE PRODUCCIÓN`);
+  }
 });

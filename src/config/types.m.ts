@@ -12,16 +12,10 @@ export interface Server {
   port?: string;
   password?: string;
   emailHost?: string;
+  deploy?: string;
 }
 
 export interface Error {
   status?: number;
   message?: string;
-}
-
-export interface Smtp {
-  user?: string;
-  pass?: string;
-  host?: string;
-  port?: number;
 }

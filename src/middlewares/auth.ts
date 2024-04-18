@@ -59,7 +59,7 @@ export const isAllowedDocument = async (req: Request, res: Response, next: NextF
       SELECT ${tableId}, shareable FROM ${tableName}_documents WHERE document_id = '${documentId}'`)
 
     if(resourceIdRequest.rowCount === 0) {
-      res.status(404).json({error: 'No document found'})
+      res.status(404).json({error: 'No document found primero'})
       return
     }
     
@@ -108,7 +108,7 @@ export const isAllowedDocument = async (req: Request, res: Response, next: NextF
       [resourceId])
 
       if(ticketIdRequest.rowCount === 0) {
-        res.status(404).json({error: 'No document found'})
+        res.status(404).json({error: 'No document found segundo'})
         return
       }
 
@@ -118,7 +118,7 @@ export const isAllowedDocument = async (req: Request, res: Response, next: NextF
       )
       
       if(stationIdRequest.rowCount === 0) {
-        res.status(404).json({error: 'No document found'})
+        res.status(404).json({error: 'No document found tercero'})
         return
       }
 
@@ -155,6 +155,7 @@ export const isAllowedImage = async (req: Request, res: Response, next: NextFunc
       SELECT ${tableId}, shareable FROM ${tableName}_images WHERE image_id = '${imageId}'`)
 
     if(resourceIdRequest.rowCount === 0) {
+      console.log(`SELECT ${tableId}, shareable FROM ${tableName}_images WHERE image_id = '${imageId}'`)
       res.status(404).json({error: 'No image found'})
       return
     }

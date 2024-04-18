@@ -99,19 +99,19 @@ export class UploadRepository {
     }
 
     public async uploadDocument(req: Request, res: Response, next: NextFunction): Promise<void> {
-        const documents: any= req.files
+        const documents: any = req.files
 
         const tableDirId = req.params.tableDirId
         const tableDir = req.url.split('/')[2]
 
-        if(documents.length < 1) {
+        if(!documents) {
             res.status(404).json({error: 'No documents uploaded'})
             return
         }
 
         for await(const i of documents) {
             try {
-                console.log({trying: `Subiendo imagen: ${i.originalname}`})
+                console.log({trying: `Subiendo documento: ${i.originalname}`})
                 const urlSplit = i.filename.split('-')
                 const documentId = `${urlSplit.at(-5)}-${urlSplit.at(-4)}-${urlSplit.at(-3)}-${urlSplit.at(-2)}-${urlSplit.at(-1)?.split('.')[0]}`
             

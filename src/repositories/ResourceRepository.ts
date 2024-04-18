@@ -3,7 +3,6 @@ import { Pool } from "pg";
 import pool from "../config/pool";
 import fs from 'fs';
 
-
 export class ResourceRepository {
     private pool: Pool = pool;
 

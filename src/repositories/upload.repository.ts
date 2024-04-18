@@ -90,6 +90,7 @@ export class UploadRepository {
 
                 console.log({success: `Imagen su vida ${(i.originalname)}`})   
             } catch (error) {
+                console.log({errorBackend: error})
                 next(error)
             }
         }

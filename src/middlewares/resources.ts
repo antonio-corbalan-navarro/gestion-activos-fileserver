@@ -59,7 +59,7 @@ export const isAllowedResource = async (req: Request, res: Response, next: NextF
       [myUserId])
       const allowedStations = allowedStationsRequest.rows[0].allowedstations
     
-      if(CASE_1.includes(tableName)) {
+      if(CASE_1?.includes(tableName)) {
         // Selecciono el elemento en la base de datos relacionado con ese documento 
         // y compruebo el campo station_id:
         const isAllowedResource = await pool.query(`
@@ -67,7 +67,7 @@ export const isAllowedResource = async (req: Request, res: Response, next: NextF
         const stationId = isAllowedResource.rows[0].station_id
   
         // Compruebo si el elemento tiene un station_id permitido para el usuario:
-        if(allowedStations.includes(stationId)) {
+        if(allowedStations?.includes(stationId)) {
           next()
         } else {
           res.status(404).json({error: 'Access denied'})
@@ -100,7 +100,7 @@ export const isAllowedResource = async (req: Request, res: Response, next: NextF
         // Compruebo que tengas acceso a esa estacion:
         const stationId = stationIdRequest.rows[0].station_id
   
-        if(allowedStations.includes(stationId)) {
+        if(allowedStations?.includes(stationId)) {
           next()
           return
         }
@@ -162,7 +162,7 @@ export const isAllowedToEdit = async (req: Request, res: Response, next: NextFun
     [myUserId])
     const allowedStations = allowedStationsRequest.rows[0].allowedstations
   
-    if(CASE_1.includes(tableName)) {
+    if(CASE_1?.includes(tableName)) {
       // Selecciono el elemento en la base de datos relacionado con ese documento 
       // y compruebo el campo station_id:
       const isAllowedResource = await pool.query(`
@@ -170,7 +170,7 @@ export const isAllowedToEdit = async (req: Request, res: Response, next: NextFun
       const stationId = isAllowedResource.rows[0].station_id
 
       // Compruebo si el elemento tiene un station_id permitido para el usuario:
-      if(allowedStations.includes(stationId)) {
+      if(allowedStations?.includes(stationId)) {
         next()
       } else {
         res.status(404).json({error: 'Access denied'})
@@ -203,7 +203,7 @@ export const isAllowedToEdit = async (req: Request, res: Response, next: NextFun
       // Compruebo que tengas acceso a esa estacion:
       const stationId = stationIdRequest.rows[0].station_id
 
-      if(allowedStations.includes(stationId)) {
+      if(allowedStations?.includes(stationId)) {
         next()
         return
       }

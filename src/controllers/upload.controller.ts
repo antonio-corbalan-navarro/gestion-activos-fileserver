@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { UploadRepository } from "../repositories/upload.repository";
+import { UploadRepository } from "../repositories/UploadRepository";
 
 const uploadRepository = new UploadRepository()
 

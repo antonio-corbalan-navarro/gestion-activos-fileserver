@@ -84,6 +84,11 @@ export const isAllowedDocument = async (req: Request, res: Response, next: NextF
     [myUserId])
     const allowedStations = allowedStationsRequest.rows[0].allowedstations
   
+    // TODO: Proteger entra de calibraciones
+    if(tableName === 'calibration') {
+      return next()
+    }
+
     if(CASE_1.includes(tableName)) {
       // Selecciono el elemento en la base de datos relacionado con ese documento 
       // y compruebo el campo station_id:
@@ -181,6 +186,11 @@ export const isAllowedImage = async (req: Request, res: Response, next: NextFunc
     [myUserId])
     const allowedStations = allowedStationsRequest.rows[0].allowedstations
   
+    //TODO: Proteger entrada calibraciones
+    if(tableName === 'calibration') {
+      return next()
+    }
+
     if(CASE_1.includes(tableName)) {
       // Selecciono el elemento en la base de datos relacionado con ese documento 
       // y compruebo el campo station_id:

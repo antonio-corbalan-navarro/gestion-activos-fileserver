@@ -1,8 +1,8 @@
 BUILD IMAGE:
-docker build -t gestion-activos-file-server .
+docker build -t gestion-activos-file-server-1.2 .
 
 RUN IMAGE:
 docker run --env-file=./.env -p 3002:3002 -i -t gestion-activos-file-server
 
 SAVE IMAGE:
-docker save -o fileserver.tar gestion-activos-file-server:1.0
+docker save -o gestion-activos-file-server-1.2.tar gestion-activos-file-server-1.2

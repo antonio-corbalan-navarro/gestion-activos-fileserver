@@ -10,6 +10,7 @@ import path from "node:path"
 import { API } from './config/server';
 import { routerV1 } from './routes';
 import { checkUser, requireAuth, isAllowedDocument, isAllowedImage } from './middlewares/auth';
+import bodyParser from 'body-parser';
 
 // Create server:
 const app = express();
@@ -21,6 +22,7 @@ app.use(cors(
       'http://localhost:3000',
       'https://diluswebappdev.vercel.app',
       'https://app.dilustech.com',
+      "https://dev.dilustech.com"
     ],
     credentials: true
   }
@@ -30,6 +32,12 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(compression());
 app.use(cookieParser());
+
+app.use(bodyParser.urlencoded({
+  extended: true,
+  limit: '1024mb',
+  parameterLimit: 100_000_000
+}))
 
 // Routes import:
 app.use('/', checkUser, requireAuth, routerV1);

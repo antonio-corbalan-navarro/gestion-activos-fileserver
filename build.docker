@@ -5,4 +5,4 @@ RUN IMAGE:
 docker run --env-file=./.env -p 3002:3002 -i -t gestion-activos-file-server
 
 SAVE IMAGE:
-docker save -o gestion-activos-file-server-1.2.tar gestion-activos-file-server-1.2
+docker save -o gestion-activos-file-server-1.3.tar gestion-activos-file-server-1.3

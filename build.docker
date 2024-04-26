@@ -1,8 +1,12 @@
 BUILD IMAGE:
-docker build -t gestion-activos-file-server-1.2 .
+docker build -t gestion-activos-file-server-1.5 .
 
 RUN IMAGE:
-docker run --env-file=./.env -p 3002:3002 -i -t gestion-activos-file-server
+docker run --name gestion-activos-file-server-1.4 -v /src/uploads/documents/station:/src/uploads/documents/station -v /src/uploads/documents/instrument:/src/uploads/documents/instrument -v /src/uploads/documents/calibration:/src/uploads/documents/calibration -v /src/uploads/documents/report:/src/uploads/documents/report -v /src/uploads/documents/response:/src/uploads/documents/response -v /src/uploads/images/station:/src/uploads/images/station -v /src/uploads/images/instrument:/src/uploads/images/instrument -v /src/uploads/images/calibration:/src/uploads/images/calibration -v /src/uploads/images/report:/src/uploads/images/report -v /src/uploads/images/response:/src/uploads/images/response -d -p 82.223.152.155:3002:3002 gestion-activos-file-server-1.4
 
 SAVE IMAGE:
-docker save -o gestion-activos-file-server-1.3.tar gestion-activos-file-server-1.3
+docker save -o gestion-activos-file-server-1.5.tar gestion-activos-file-server-1.5
+
+[10:27 AM] Antonio Corbalán Navarro
+gestion-activos-file-server-1.4
+
